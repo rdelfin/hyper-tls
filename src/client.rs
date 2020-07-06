@@ -45,6 +45,31 @@ impl HttpsConnector<HttpConnector> {
             .unwrap_or_else(|e| panic!("HttpsConnector::new() failure: {}", e))
     }
 
+    /// Construct a new HttpsConnector.
+    ///
+    /// This is identical to the new() method, but it allows you to specify
+    /// an identity certificate.
+    ///
+    /// # Note
+    ///
+    /// By default this connector will use plain HTTP if the URL provded uses
+    /// the HTTP scheme (eg: http://example.com/).
+    ///
+    /// If you would like to force the use of HTTPS then call https_only(true)
+    /// on the returned connector.
+    ///
+    /// # Panics
+    ///
+    /// This will panic if the underlying TLS context could not be created.
+    ///
+    /// To handle that error yourself, you can use the `HttpsConnector::from`
+    /// constructor after trying to make a `TlsConnector`.
+    pub fn new_with_identity(identity: native_tls::Identity) -> Self {
+        native_tls::TlsConnector::builder().identity(identity).build()
+            .map(|tls| HttpsConnector::new_(tls.into()))
+            .unwrap_or_else(|e| panic!("HttpsConnector::new() failure: {}", e))
+    }
+
     fn new_(tls: TlsConnector) -> Self {
         let mut http = HttpConnector::new();
         http.enforce_http(false);

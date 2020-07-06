@@ -20,6 +20,29 @@
 //!     Ok(())
 //! }
 //! ```
+//!
+//! Or, if you want to specify an identity certificate:
+//! ```no_run
+//! use hyper_tls::{HttpsConnector, Identity};
+//! use hyper::Client;
+//! use std::fs::File;
+//! use std::io::Read;
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn std::error::Error>>{
+//! let mut file = File::open("identity.pfx")?;
+//! let mut identity = vec![];
+//! file.read_to_end(&mut identity)?;
+//! let identity = Identity::from_pkcs12(&identity, "hunter2")?;
+//!
+//!     let https = HttpsConnector::new_with_identity(identity);
+//!     let client = Client::builder().build::<_, hyper::Body>(https);
+//!
+//!     let res = client.get("https://hyper.rs".parse()?).await?;
+//!     assert_eq!(res.status(), 200);
+//!     Ok(())
+//! }
+//! ```
 #![doc(html_root_url = "https://docs.rs/hyper-tls/0.4.1")]
 #![cfg_attr(test, deny(warnings))]
 #![deny(missing_docs)]
@@ -29,6 +52,7 @@
 pub extern crate native_tls;
 
 pub use client::{HttpsConnecting, HttpsConnector};
+pub use native_tls::Identity;
 pub use stream::{MaybeHttpsStream, TlsStream};
 
 mod client;
